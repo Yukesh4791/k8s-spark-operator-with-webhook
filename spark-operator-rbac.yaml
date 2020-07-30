@@ -1,0 +1,56 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sparkoperator-cr
+  labels:
+    app.kubernetes.io/name: sparkoperator
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["services", "configmaps", "secrets"]
+  verbs: ["create", "get", "delete", "update"]
+- apiGroups: ["extensions"]
+  resources: ["ingresses"]
+  verbs: ["create", "get", "delete"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "update", "patch"]
+- apiGroups: [""]
+  resources: ["resourcequotas"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["create", "get", "update", "delete"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]
+  verbs: ["create", "get", "update", "delete"]
+- apiGroups: ["sparkoperator.k8s.io"]
+  resources: ["sparkapplications", "scheduledsparkapplications", "sparkapplications/status", "scheduledsparkapplications/status"]
+  verbs: ["*"]
+  
+  # This permission is granted only if the webhook is enabled
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["delete"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sparkoperator-crb
+  labels:
+    app.kubernetes.io/name: sparkoperator
+subjects:
+  - kind: ServiceAccount
+    name: sparkoperator
+    namespace: spark-operator
+roleRef:
+  kind: ClusterRole
+  name: sparkoperator-cr
+  apiGroup: rbac.authorization.k8s.io
